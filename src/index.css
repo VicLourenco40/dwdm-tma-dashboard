@@ -1,0 +1,22 @@
+:root {
+  --zinc-100: #f4f4f5;
+  --zinc-300: #d4d4d8;
+  --zinc-400: #a1a1aa;
+  --zinc-900: #18181b;
+  --zinc-950: #09090b;
+  --red-400: #f87171;
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --green-400: #4ade80;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--zinc-950);
+  color: var(--zinc-100);
+}
