@@ -1,0 +1,80 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+
+  input, select {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    border: 1px solid var(--zinc-900);
+    border-radius: 1rem;
+    color: var(--zinc-100);
+    width: 16rem;
+    height: 3rem;
+    outline: none;
+
+    &::placeholder {
+      color: var(--zinc-300);
+    }
+
+    &:focus {
+      border: 1px solid var(--orange-500);
+    }
+  }
+}
+
+.newTransactionButton {
+  background-color: var(--orange-400);
+  cursor: pointer;
+  border: none;
+  width: 12rem;
+  height: 3rem;
+  border-radius: 1rem;
+  color: var(--zinc-950);
+  text-transform: uppercase;
+  font-weight: bold;
+
+  &:hover {
+    background-color: var(--orange-500);
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+  margin: 2rem 0;
+  
+  th {
+    font-weight: 700;
+    text-align: left;
+    padding: 1rem 2rem;
+    text-transform: uppercase;
+  }
+  
+  td {
+    padding: 1rem 2rem;
+    background-color: var(--zinc-900);
+    
+    &:first-child {
+      border-radius: 1rem 0 0 1rem;
+    }
+
+    &:last-child {
+      border-radius: 0 1rem 1rem 0;
+    }
+  }
+}
+
+.income {
+  color: var(--green-400);
+}
+
+.outcome {
+  color: var(--red-400);
+}
