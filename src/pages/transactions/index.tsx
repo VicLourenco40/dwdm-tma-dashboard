@@ -1,32 +1,45 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './styles.module.css'
 
+type Transaction = {
+  id: number
+  description: string
+  amount: number
+  category: string
+  type: 'income' | 'outcome'
+}
+
 export function Transactions() {
-  const [transactions, setTransactions] = useState([
-    {
-      'id': 1,
-      'description': 'Office supplies purchase',
-      'amount': 123,
-      'type': 'outcome',
-      'category': 'Office'
-    },
-    {
-      'id': 2,
-      'description': 'Employee X\'s salary',
-      'amount': 2000,
-      'type': 'outcome',
-      'category': 'Salary'
-    },
-    {
-      'id': 3,
-      'description': 'Computer sale',
-      'amount': 1500,
-      'type': 'income',
-      'category': 'Office'
-    }
-  ])
+  useEffect(() => {
+    fetchTransactions()
+  }, [])
+
+  const [transactions, setTransactions] = useState<Transaction[]>([])
 
   const [filterByDescription, setFilterByDescription] = useState('')
+
+  async function fetchTransactions() {
+    await fetch('http://127.0.0.1:8000/api/transactions', {
+      method: 'GET'
+    }).then(async (response) => {
+      return await response.json()
+    }).then((data) => {
+      setTransactions(data.transactions)
+    })
+  }
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const descriptionLower = transaction.description.toLowerCase()
+    const filterLower = filterByDescription.toLowerCase()
+
+    return descriptionLower.includes(filterLower)
+  })
+
+  const dialogRef = useRef()
+
+  function handleOpenDialog() {
+    dialogRef.current.showModal()
+  }
 
   return (
     <main>
@@ -42,11 +55,16 @@ export function Transactions() {
             <option>Cleaning</option>
           </select>
         </div>
-        <button className={styles.newTransactionButton}>New transaction</button>
+        <button
+          className={styles.newTransactionButton}
+          onClick={handleOpenDialog}
+        >
+          New transaction
+        </button>
+        <dialog ref={dialogRef}>
+          <h1>Dialog</h1>
+        </dialog>
       </header>
-
-      <h1>{filterByDescription}</h1>
-
       <table className={styles.table}>
         <tbody>
           <tr>
@@ -56,7 +74,7 @@ export function Transactions() {
             <th>Date</th>
           </tr>
           {
-            transactions.map((transaction) => {
+            filteredTransactions.map((transaction) => {
               return (
                 <tr key={transaction.id}>
                   <td>{transaction.description}</td>
