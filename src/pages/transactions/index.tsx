@@ -6,7 +6,8 @@ type Transaction = {
   description: string
   amount: number
   category: string
-  type: 'income' | 'outcome'
+  type: 'income' | 'outcome',
+  date: string
 }
 
 export function Transactions() {
@@ -38,7 +39,51 @@ export function Transactions() {
   const dialogRef = useRef()
 
   function handleOpenDialog() {
-    dialogRef.current.showModal()
+    dialogRef.current!.showModal()
+  }
+
+  function handleCloseDialog() {
+    dialogRef.current!.close()
+  }
+
+  const[description, setDescription] = useState('');
+  const[amount, setAmount] = useState(0);
+  const[category, setCategory] = useState('');
+  const[type, setType] = useState<'income' | 'outcome'>('income');
+  const[date, setDate] = useState('');
+
+  async function handleNewTransactionSubmit(event) {
+    event.preventDefault();
+
+    /*
+    const transaction = {
+      id: transactions.length + 1,
+      description: description,
+      amount: amount,
+      category: category,
+      date: date,
+      type: type
+    }
+    */
+
+    await fetch('http://localhost:8000/api/transactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        description: description,
+        amount: amount,
+        category: category,
+        type: type
+      })
+    })
+    .then(async (response) => await response.json())
+    .then((data) => {
+      console.log(data);
+    })
+
+    //setTransactions([...transactions, transaction]);
   }
 
   return (
@@ -61,8 +106,78 @@ export function Transactions() {
         >
           New transaction
         </button>
-        <dialog ref={dialogRef}>
-          <h1>Dialog</h1>
+        <dialog ref={dialogRef} className={styles.dialog}>
+          <div className={styles.dialogHeader}>
+            <h1>New transaction</h1>
+            <button type='button' onClick={handleCloseDialog}>X</button>
+          </div>
+          <form onSubmit={handleNewTransactionSubmit} className={styles.form}>
+            <fieldset>
+              <label>Description</label>
+              <input
+                type='text'
+                placeholder='Describe your transaction'
+                value={description}
+                onChange={(event) => {
+                  setDescription(event.target.value)
+                }}
+              />
+            </fieldset>
+            <fieldset>
+              <label>Amount</label>
+              <input
+                type='text'
+                placeholder='Transaction value'
+                onChange={(event) => {
+                  setAmount(Number(event.target.value))
+                }}
+              />
+            </fieldset>
+            <fieldset>
+              <label>Category</label>
+              <select
+                onChange={(event) => {
+                  setCategory(event.target.value);
+                }}
+              >
+                <option></option>
+                <option value='1'>Wages</option>
+                <option value='2'>Office supplies</option>
+                <option value='3'>Sales</option>
+              </select>
+            </fieldset>
+            <fieldset>
+              <label>Date</label>
+              <input
+                type='date'
+                placeholder='Emission date'
+                onChange={(event) => {
+                  setDate(event.target.value);
+                }}
+              />
+            </fieldset>
+            <fieldset className={styles.radioGroup}>
+              <label>Income</label>
+              <input
+                type='radio'
+                name='type'
+                value='income'
+                onChange={(event) => {
+                  setType(event.target.value);
+                }}
+              />
+              <label>Outcome</label>
+              <input
+                type='radio'
+                name='type'
+                value='outcome'
+                onChange={(event) => {
+                  setType(event.target.value);
+                }}
+              />
+            </fieldset>
+            <button type='submit'>Add</button>
+          </form>
         </dialog>
       </header>
       <table className={styles.table}>
