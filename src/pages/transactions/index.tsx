@@ -1,23 +1,31 @@
-import { useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import styles from './styles.module.css'
+
+type Category = {
+  id: number
+  title: string
+}
 
 type Transaction = {
   id: number
   description: string
   amount: number
-  category: string
-  type: 'income' | 'outcome',
+  category: Category
+  type: 'income' | 'outcome'
   date: string
 }
 
 export function Transactions() {
   useEffect(() => {
-    fetchTransactions()
+    fetchTransactions(),
+    fetchCategories()
   }, [])
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   const [filterByDescription, setFilterByDescription] = useState('')
+  const [filterByCategory, setFilterByCategory] = useState(0)
 
   async function fetchTransactions() {
     await fetch('http://127.0.0.1:8000/api/transactions', {
@@ -29,14 +37,27 @@ export function Transactions() {
     })
   }
 
+  async function fetchCategories() {
+    await fetch('http://127.0.0.1:8000/api/categories', {
+      method: 'GET'
+    }).then(async (response) => {
+      return await response.json()
+    }).then((data) => {
+      setCategories(data.categories)
+    })
+  }
+
   const filteredTransactions = transactions.filter((transaction) => {
     const descriptionLower = transaction.description.toLowerCase()
     const filterLower = filterByDescription.toLowerCase()
 
-    return descriptionLower.includes(filterLower)
+    const hasFilter = descriptionLower.includes(filterLower)
+    const hasCategory = !filterByCategory || transaction.category.id === filterByCategory
+
+    return hasFilter && hasCategory 
   })
 
-  const dialogRef = useRef()
+  const dialogRef = useRef<HTMLDialogElement | null>(null)
 
   function handleOpenDialog() {
     dialogRef.current!.showModal()
@@ -46,25 +67,14 @@ export function Transactions() {
     dialogRef.current!.close()
   }
 
-  const[description, setDescription] = useState('');
-  const[amount, setAmount] = useState(0);
-  const[category, setCategory] = useState('');
-  const[type, setType] = useState<'income' | 'outcome'>('income');
-  const[date, setDate] = useState('');
+  const[description, setDescription] = useState('')
+  const[amount, setAmount] = useState(0)
+  const[category, setCategory] = useState('')
+  const[type, setType] = useState<'income' | 'outcome'>('income')
+  const[date, setDate] = useState('')
 
-  async function handleNewTransactionSubmit(event) {
-    event.preventDefault();
-
-    /*
-    const transaction = {
-      id: transactions.length + 1,
-      description: description,
-      amount: amount,
-      category: category,
-      date: date,
-      type: type
-    }
-    */
+  async function handleNewTransactionSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
 
     await fetch('http://localhost:8000/api/transactions', {
       method: 'POST',
@@ -75,15 +85,14 @@ export function Transactions() {
         description: description,
         amount: amount,
         category: category,
-        type: type
+        type: type,
+        date: date
       })
     })
     .then(async (response) => await response.json())
     .then((data) => {
-      console.log(data);
+      console.log(data)
     })
-
-    //setTransactions([...transactions, transaction]);
   }
 
   return (
@@ -93,11 +102,21 @@ export function Transactions() {
           <input type='text' placeholder='Search' onChange={(event) => {
             setFilterByDescription(event.target.value)
           }}/>
-          <select>
-            <option>Select category</option>
-            <option>Office</option>
-            <option>Salary</option>
-            <option>Cleaning</option>
+          <select
+            onChange={(event) => {
+              setFilterByCategory(Number(event.target.value))
+            }}
+          >
+            <option value="0">Select category</option>
+            {
+              categories.map((category) => {
+                return (
+                  <option value={category.id}>
+                    {category.title}
+                  </option>
+                )
+              })
+            }
           </select>
         </div>
         <button
@@ -137,13 +156,18 @@ export function Transactions() {
               <label>Category</label>
               <select
                 onChange={(event) => {
-                  setCategory(event.target.value);
+                  setCategory(event.target.value)
                 }}
               >
-                <option></option>
-                <option value='1'>Wages</option>
-                <option value='2'>Office supplies</option>
-                <option value='3'>Sales</option>
+                {
+                  categories.map((category) => {
+                    return (
+                      <option value={category.id}>
+                        {category.title}
+                      </option>
+                    )
+                  })
+                }
               </select>
             </fieldset>
             <fieldset>
@@ -152,7 +176,7 @@ export function Transactions() {
                 type='date'
                 placeholder='Emission date'
                 onChange={(event) => {
-                  setDate(event.target.value);
+                  setDate(event.target.value)
                 }}
               />
             </fieldset>
@@ -163,7 +187,7 @@ export function Transactions() {
                 name='type'
                 value='income'
                 onChange={(event) => {
-                  setType(event.target.value);
+                  event.target.value === 'income' && setType('income')
                 }}
               />
               <label>Outcome</label>
@@ -172,7 +196,7 @@ export function Transactions() {
                 name='type'
                 value='outcome'
                 onChange={(event) => {
-                  setType(event.target.value);
+                  event.target.value === 'outcome' && setType('outcome')
                 }}
               />
             </fieldset>
@@ -197,7 +221,7 @@ export function Transactions() {
                     {transaction.type === 'outcome' ? '- ' : '+ '}
                     {transaction.amount}
                   </td>
-                  <td>{transaction.category}</td>
+                  <td>{transaction.category.title}</td>
                   <td>23/09/2024</td>
                 </tr>
               )

@@ -1,11 +1,11 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import styles from './styles.module.css';
-import logo from '../../../assets/logo.svg';
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import styles from './styles.module.css'
+import logo from '../../../assets/logo.svg'
 
 export function AppLayout() {
-  const location = useLocation();
+  const location = useLocation()
 
-  console.log(location);
+  console.log(location)
 
   return (
     <div className={styles.container}>
