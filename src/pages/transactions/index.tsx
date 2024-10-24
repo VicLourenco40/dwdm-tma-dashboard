@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import styles from './styles.module.css'
+import { useNavigate } from 'react-router-dom'
 
 type Category = {
   id: number
@@ -37,13 +38,31 @@ export function Transactions() {
     })
   }
 
+  const navigate = useNavigate();
+
   async function fetchCategories() {
     await fetch('http://127.0.0.1:8000/api/categories', {
-      method: 'GET'
-    }).then(async (response) => {
-      return await response.json()
-    }).then((data) => {
-      setCategories(data.categories)
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    .then(async (response) => {
+      return {
+        response,
+        data: await response.json()
+      }
+    })
+    .then((result) => {
+      if (result.response.status === 401) {
+        localStorage.removeItem('token');
+
+        navigate('auth/sign-in', {
+          replace: true
+        });
+      }
+
+      setCategories(result.data.categories)
     })
   }
 
